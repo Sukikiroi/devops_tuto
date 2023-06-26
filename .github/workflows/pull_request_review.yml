@@ -1,0 +1,27 @@
+name: Pre-Merge Checks
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  check_reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Pull Request
+        run: |
+          # Get the number of submitted reviews
+          reviews=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
+          | jq '[.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED")] | length')
+
+          # Check if there are at least two approved or changes requested reviews
+          if [ "$reviews" -lt 2 ]; then
+            echo "Please ensure there are at least two approved or changes requested reviews before merging."
+            exit 1
+          fi

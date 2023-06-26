@@ -1,0 +1,33 @@
+name: Update Linode Kubernetes Cluster
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  LINODE_TOKEN: ${{ secrets.LINODE_TOKEN }}
+  DOCKER_IMAGE: your-dockerhub-image:tag
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Update Linode Kubernetes Cluster
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $LINODE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "containers": [
+                {
+                  "image": "'$DOCKER_IMAGE'",
+                  "name": "your-container-name"
+                }
+              ]
+            }' \
+            "https://api.linode.com/v4/kubernetes/clusters/your-cluster-id/containers/your-container-id"
